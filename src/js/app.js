@@ -5,10 +5,10 @@ App = {
   hasVoted: false,
 
   init: function() {
-    return App.initWeb3();
+    return App.loadWeb3Provider();
   },
 
-  initWeb3: function() {
+  loadWeb3Provider: function () {
 
     if (typeof web3 !== 'undefined') {
       // If a web3 instance is already provided by Meta Mask.
@@ -21,24 +21,24 @@ App = {
       web3 = new Web3(App.web3Provider);
       ethereum.enable();
     }
-    return App.initContract();
+    return App.loadContracts();
   },
 
-  initContract: function() {
+  loadContracts: function () {
     $.getJSON("Election.json", function(election) {
       // Instantiate a new truffle contract from the artifact
       App.contracts.Election = TruffleContract(election);
       // Connect provider to interact with contract
       App.contracts.Election.setProvider(App.web3Provider);
 
-      App.listenForEvents();
+      App.eventListener();
 
-      return App.render();
+      return App.loadData();
     });
   },
 
   // Listen for events emitted from the contract
-  listenForEvents: function() {
+  eventListener: function () {
     App.contracts.Election.deployed().then(function(instance) {
       instance.votedEvent({}, {
         fromBlock: 'latest',
@@ -46,13 +46,13 @@ App = {
       }).watch(function(error, event) {
         console.log("event triggered", event)
         // Reload when a new vote is recorded
-        App.render();
+        App.loadData();
       });
     });
   },
 
-  render: function() {
-    var electionInstance;
+  loadData: function () {
+    var electionContract;
     var loader = $("#loader");
     var content = $("#content");
 
@@ -72,14 +72,14 @@ App = {
 
     // Load contract data
     App.contracts.Election.deployed().then(function (instance) {
-      electionInstance = instance;
-      return electionInstance.candidatesCount();
+      electionContract = instance;
+      return electionContract.candidatesCount();
     }).then(function (candidatesCount) {
 
       // Store all promised to get candidate info
       const promises = [];
       for (var i = 1; i <= candidatesCount; i++) {
-        promises.push(electionInstance.candidates(i));
+        promises.push(electionContract.candidates(i));
       }
 
       // Once all candidates are received, add to dom
@@ -110,7 +110,7 @@ App = {
         })
       });
 
-      return electionInstance.voters(App.account);
+      return electionContract.voters(App.account);
     }).then(function (hasVoted) {
       // Do not allow a user to vote
       if(hasVoted) {
@@ -124,7 +124,7 @@ App = {
     });
   },
 
-  castVote: function() {
+  doVote: function () {
     var candidateId = $('#candidatesSelect').val();
     App.contracts.Election.deployed().then(function(instance) {
       return instance.vote(candidateId, { from: App.account });
