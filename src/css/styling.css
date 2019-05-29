@@ -12,7 +12,7 @@ body {
      text-align: center;
  }
 
- #accountAddress {
+ #accountAddress, #accountBalance{
      text-align: center;
  }
 
