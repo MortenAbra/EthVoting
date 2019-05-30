@@ -1,15 +1,12 @@
 App =
     {
-        web3Provider: null,
         contracts: {},
-        account: '0x0',
-        hasVoted: false,
 
         init: function () {
             console.log("Initializing web3 provider");
             return App.loadWeb3Provider();
         },
-
+        //Loading web3 provider
         loadWeb3Provider: function () {
             if (typeof web3 !== 'undefined') {
                 // If a web3 instance is already provided by Meta Mask.
@@ -28,23 +25,30 @@ App =
             return App.loadContracts();
         },
 
+        //Getting the ABI to connect the smart contract to the website
         loadContracts: function () {
             $.getJSON("Ballot.json", function (ballot) {
-                // Instantiate a new truffle contract from the artifact
+                /*
+                Instantiate truffle contract
+                Hereafter setting the provider to interact with the contract
+                Then checking for events happening - Like VotedEvent
+                Lastly loading the contract data into the website
+                 */
                 App.contracts.Ballot = TruffleContract(ballot);
-                // Connect provider to interact with contract
                 App.contracts.Ballot.setProvider(App.web3Provider);
-
                 App.EventListener();
                 console.log("Contract loaded!");
                 return App.loadData();
             });
         },
 
-        // Listen for events emitted from the contract
+        /*
+        Listen for events emitted from the contract
+        Reloads after event
+         */
         EventListener: function () {
-            App.contracts.Ballot.deployed().then(function (instance) {
-                instance.VotedEvent({}, {
+            App.contracts.Ballot.deployed().then(function (app) {
+                app.VotedEvent({}, {
                     fromBlock: 'latest',
                     toBlock: 'latest'
                 }).watch(function (error, event) {
@@ -59,18 +63,21 @@ App =
 
         loadData: function () {
             var ballot;
-            var loading = $('#loader');
+            var animatedLoader = $('#loader');
             var renderContent = $('#content');
+            var alertbox = $('#alert');
+
+            alertbox.hide();
 
 
             // Loading the account data
             web3.eth.getCoinbase(function (err, account) {
                 if (err === null) {
                     App.account = account;
-                    $('#accountAddress').html("Account id: " + account);
+                    $('#address').html("Account id: " + account);
                     web3.eth.getBalance(account, function (err, balance) {
                         if(err === null) {
-                            $("#accountBalance").text("Account Balance: " + web3.fromWei(balance, "ether") + " ETH");
+                            $("#balance").text("Account Balance: " + web3.fromWei(balance, "ether") + " ETH");
                         }
                     });
                 }
@@ -79,11 +86,11 @@ App =
 
 
             // Load contract data
-            App.contracts.Ballot.deployed().then(function (instance) {
-                ballot = instance;
+            App.contracts.Ballot.deployed().then(function (app) {
+                ballot = app;
                 return ballot.totalCandidates();
             }).then(function (totalCandidates) {
-                // Store all promised to get candidate info
+                // Store all promises to get candidate info
                 const promises = [];
                 for (var i = 1; i <= totalCandidates; i++) {
                     promises.push(ballot.candidates(i));
@@ -94,8 +101,8 @@ App =
                     var results = $("#results");
                     results.empty();
 
-                    var selectCandidate = $('#selectCandidate');
-                    //selectCandidate.empty();
+                    var pickCandidate = $('#pickCandidate');
+                    pickCandidate.empty();
 
                     candidates.forEach(candidate => {
                         var candidateID = candidate[0];
@@ -109,18 +116,17 @@ App =
 
                         // Render candidate ballot option
                         var ballotOptionRender = "<option value='" + candidateID + "' >" + candidateName + "</option>"
-                        selectCandidate.append(ballotOptionRender);
+                        pickCandidate.append(ballotOptionRender);
                     })
                 });
 
                 return ballot.voters(App.account);
-            }).then(function (hasVoted) {
+            }).then(function (voted) {
                 // Do not allow a user to vote
-                if (hasVoted) {
+                if (voted) {
                     $('form').hide();
-
                 }
-                loading.hide();
+                animatedLoader.hide();
                 renderContent.show();
             }).catch(function (error) {
                 console.warn(error);
@@ -128,14 +134,18 @@ App =
         },
 
         candidateVote: function () {
-            var candidateId = $('#selectCandidate').val();
-            App.contracts.Ballot.deployed().then(function (instance) {
-                return instance.candidateVote(candidateId, {from: App.account});
+            var alertbox = $('#alert');
+
+            alertbox.hide();
+            var id = $('#pickCandidate').val();
+            App.contracts.Ballot.deployed().then(function (app) {
+                return app.candidateVote(id, {from: App.account});
             }).then(function (result) {
                 // Wait for votes to update
                 $("#content").hide();
                 $("#loader").show();
             }).catch(function (err) {
+                alertbox.show();
                 console.error(err);
             })
         }

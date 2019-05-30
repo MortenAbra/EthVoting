@@ -19,11 +19,11 @@ body {
 #loader {
     margin: auto;
     margin-top: 3%;
-    border: 16px solid #f3f3f3;
-    border-radius: 50%;
-    border-top: 16px solid #3498db;
-    width: 120px;
-    height: 120px;
+    border: 8px solid #f8f8f8;
+    border-radius: 80%;
+    border-top: 8px solid #000000;
+    width: 40px;
+    height: 40px;
     -webkit-animation: spin 2s linear infinite; /* Safari */
     animation: spin 2s linear infinite;
 }
