@@ -39,6 +39,7 @@ contract Ballot {
         voters[_person].authorized = true;
     }
 
+
     //Function for voting on a candidate
     function candidateVote (uint _id) public {
         //Requires a voter not to have already voted
@@ -47,8 +48,12 @@ contract Ballot {
         //Needs a valid candidate for the voter to vote
         require(_id > 0 && _id <= totalCandidates);
 
+
         //Updates the number of votes for the candidate voted for
         candidates[_id].candidateVotes++;
+
+        voters[msg.sender].voted = true;
+        voters[msg.sender].vote+=1;
 
         //Triggering the voted event
         emit VotedEvent(_id);
@@ -62,6 +67,7 @@ contract Ballot {
         newCandidate("Morten");
         newCandidate("Mads");
         newCandidate("Dennis");
+        //authorize(0xea978991fbfa2ea664163d8e193c99a33c332bd9);
     }
 
     function endElection() ownerOnly public {
