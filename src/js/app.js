@@ -67,8 +67,6 @@ ElectionApp =
 
         loadData: function () {
             var ballot;
-            var animatedLoader = $('#loader');
-            var renderContent = $('#content');
             var alertbox = $('#alert');
 
             alertbox.hide();
@@ -92,54 +90,46 @@ ElectionApp =
                 ballot = app;
                 return ballot.totalCandidates();
             }).then(function (totalCandidates) {
-                // Store all promises to get candidate info
-                const promises = [];
-                for (var i = 1; i <= totalCandidates; i++) {
-                    promises.push(ballot.candidates(i));
-                    // Once all candidates are received, add to dom
-                    Promise.all(promises).then((candidates) => {
-                        var results = $("#results");
-                        results.empty();
 
+                /*
+                By storing all promises to get the right candidate info, so whem all candidates have been recieved, they can be added to the front-end
+                */
+                const groupPromises = [];
+                for (var i = 1; i <= totalCandidates; i++) {
+                    groupPromises.push(ballot.candidates(i));
+                    Promise.all(groupPromises).then((candidates) => {
+                        var results = $("#results");
                         var pickCandidate = $('#pickCandidate');
+
+
+                        results.empty();
+                        console.log("Emptying results!");
                         pickCandidate.empty();
+                        console.log("Emptying selector!");
 
                         candidates.forEach(candidate => {
                             var candidateID = candidate[0];
                             var candidateName = candidate[1];
                             var candidateVotes = candidate[2];
-
-
-                            // Render candidate Result
                             var resultsRenderTemplate = "<tr><th>" + candidateID + "</th><td>" + candidateName + "</td><td>" + candidateVotes + "</td></tr>"
-                            results.append(resultsRenderTemplate);
-
-                            // Render candidate ballot option
                             var ballotOptionRender = "<option value='" + candidateID + "' >" + candidateName + "</option>"
+
+                            results.append(resultsRenderTemplate);
+                            console.log("appending render template to front-end");
                             pickCandidate.append(ballotOptionRender);
+                            console.log("appending option template to front-end")
                         })
                     });
                 }
-
-                return ballot.voters(ElectionApp.account);
-            }).then(function (voted) {
-                if(ballot.voted !== false){
-                    $('#form').hide();
-                }
-                animatedLoader.hide();
-                renderContent.show();
-
-            }).catch(function (error) {
-                console.warn(error);
             });
         },
 
 
         candidateVote: function () {
             var alertbox = $('#alert');
+            var id = $('#pickCandidate').val();
 
             alertbox.hide();
-            var id = $('#pickCandidate').val();
             ElectionApp.contracts.Ballot.deployed().then(function (app) {
                 return app.candidateVote(id, {from: ElectionApp.account});
             }).then(function (result) {
