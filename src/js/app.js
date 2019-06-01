@@ -1,6 +1,6 @@
 ElectionApp =
     {
-        voted: false,
+        web3Provider: null,
         contracts: {},
 
         init: function () {
@@ -36,12 +36,19 @@ ElectionApp =
         Lastly loading the contract data into the website
          */
         loadContracts: function () {
-            $.getJSON("Ballot.json", function (ballot) {
-                ElectionApp.contracts.Ballot = TruffleContract(ballot);
-                ElectionApp.contracts.Ballot.setProvider(ElectionApp.web3Provider);
-                ElectionApp.EventListener();
-                console.log("Contract loaded!");
-                return ElectionApp.loadData();
+            $.ajax({
+                type: "GET",
+                url: "Ballot.json",
+                success: function (data) {
+                    ElectionApp.contracts.Ballot = TruffleContract(data);
+                    ElectionApp.contracts.Ballot.setProvider(ElectionApp.web3Provider);
+                    ElectionApp.EventListener();
+                    console.log("Contract loaded!");
+                    return ElectionApp.loadData();
+                },
+                error: function (jqXHR, textStatus, error) {
+                    console.log(error);
+                }
             });
         },
 
@@ -73,12 +80,12 @@ ElectionApp =
 
 
             // Loading the account data
-            web3.eth.getCoinbase(function (err, userAccount) {
-                if (err === null) {
+            web3.eth.getCoinbase(function (error, userAccount) {
+                if (error === null) {
                     ElectionApp.account = userAccount;
                     $('#address').html("Account id: " + userAccount);
-                    web3.eth.getBalance(userAccount, function (err, balance) {
-                        if (err === null) {
+                    web3.eth.getBalance(userAccount, function (error, balance) {
+                        if (error === null) {
                             $("#balance").text("Account Balance: " + web3.fromWei(balance, "ether") + " ETH");
                         }
                     });
@@ -115,15 +122,13 @@ ElectionApp =
                             var ballotOptionRender = "<option value='" + candidateID + "' >" + candidateName + "</option>"
 
                             results.append(resultsRenderTemplate);
-                            console.log("appending render template to front-end");
                             pickCandidate.append(ballotOptionRender);
-                            console.log("appending option template to front-end")
+
                         })
                     });
                 }
             });
         },
-
 
         candidateVote: function () {
             var alertbox = $('#alert');
@@ -140,6 +145,30 @@ ElectionApp =
                 alertbox.show();
                 console.error(err);
             })
+        },
+
+        voterAuthorized: function () {
+            var alertbox = $('#alert');
+            var votersAddress = document.getElementById("inputID").value;
+            var instance;
+            ElectionApp.contracts.Ballot.deployed().then(function (app) {
+                instance = app;
+                return instance.authorize(votersAddress);
+            }).then(function (result) {
+                console.log(votersAddress);
+            });
+
+        },
+
+        createCandidate: function () {
+            var candidateForm = document.getElementById("newCandidateID").value;
+            var instance;
+            ElectionApp.contracts.Ballot.deployed().then(function (app) {
+                instance = app;
+                return instance.newCandidate(candidateForm);
+            }).then(function (results) {
+                console.log(candidateForm);
+            });
         }
     }
 

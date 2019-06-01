@@ -30,18 +30,20 @@ contract Ballot {
     }
 
     //Function to add new candidates
-    function newCandidate(string _name) private {
-        totalCandidates+=1;
+    function newCandidate(string _name) public {
+        require(voters[msg.sender].authorized == true);
+        totalCandidates += 1;
         candidates[totalCandidates] = Candidate(totalCandidates, _name, 0);
     }
 
-    function authorize(address _person) ownerOnly public {
+    function authorize(address _person) public {
+        require(voters[_person].authorized == false);
         voters[_person].authorized = true;
     }
 
 
     //Function for voting on a candidate
-    function candidateVote (uint _id) public {
+    function candidateVote(uint _id) public {
         //Requires a voter not to have already voted
         require(!voters[msg.sender].voted);
         require(voters[msg.sender].authorized);
@@ -53,7 +55,7 @@ contract Ballot {
         candidates[_id].candidateVotes++;
 
         voters[msg.sender].voted = true;
-        voters[msg.sender].vote+=1;
+        voters[msg.sender].vote += 1;
 
         //Triggering the voted event
         emit VotedEvent(_id);
@@ -64,9 +66,11 @@ contract Ballot {
     //Constructor - Initialize new candidates to vote for
     constructor () public {
         owner = msg.sender;
-        newCandidate("Morten");
+/*      newCandidate("Morten");
         newCandidate("Mads");
         newCandidate("Dennis");
+        newCandidate("Lasse");
+        newCandidate("Hellen");*/
         //authorize(0xea978991fbfa2ea664163d8e193c99a33c332bd9);
     }
 

@@ -2,7 +2,7 @@ body {
 
 
 }
- .maincard{
+ .maincard, #authVoter{
      margin: auto;
      width: 50%;
      margin-top: 5%;
@@ -39,3 +39,14 @@ body {
     100% { transform: rotate(360deg); }
 }
 
+/*@media screen and (max-width: 570px) {
+    #inputId{
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 385px) {
+    #authButton {
+        width: 100%;
+    }
+}*/

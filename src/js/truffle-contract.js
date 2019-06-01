@@ -4084,7 +4084,7 @@ function fromByteArray (uint8) {
     return num;
   };
 
-  // Exported mostly for testing purposes, use plain name instead
+  // Exported mostly for test purposes, use plain name instead
   BN._prime = function prime (name) {
     // Cached version of prime
     if (primes[name]) return primes[name];

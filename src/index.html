@@ -25,6 +25,25 @@
             <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
             <strong>Error</strong> Error - You must be authorized to vote! Else reconnect with MetaMask!
         </div>
+        <div id="authVoter">
+        <form id="voterAddress" onsubmit="ElectionApp.voterAuthorized(); return false;">
+            Voter address:<br>
+            <input id="inputID" type="text" value="Authenticate address">
+            <button id="authButton" class="w3-button w3-blue" type="submit">Submit</button>
+        </form>
+        </div>
+        <hr>
+
+        <div id="newCandidateContainer">
+            <form onsubmit="ElectionApp.createCandidate(); return false;">
+                Candidate name:<br>
+                <input id="newCandidateID" type="text" value="Candidate name">
+                <button id="candidateButton" class="w3-button w3-blue" type="submit">Submit</button>
+            </form>
+        </div>
+        <hr>
+
+
         <table class="w3-table w3-striped">
             <thead>
             <tr>
@@ -41,7 +60,7 @@
                 <select class="w3-select w3-border" id="pickCandidate" name="option"></select>
             </div>
             <p>
-                <button class="w3-button w3-blue" type="submit">Vote</button>
+                    <button class="w3-button w3-blue" type="submit">Vote</button>
             </p>
             <hr>
         </form>
