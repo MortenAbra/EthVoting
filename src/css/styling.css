@@ -2,7 +2,7 @@ body {
 
 
 }
- .maincard, #authVoter{
+ .maincard, #authVoter #newCandidateContainer{
      margin: auto;
      width: 50%;
      margin-top: 5%;

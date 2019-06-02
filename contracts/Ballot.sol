@@ -66,11 +66,6 @@ contract Ballot {
     //Constructor - Initialize new candidates to vote for
     constructor () public {
         owner = msg.sender;
-/*      newCandidate("Morten");
-        newCandidate("Mads");
-        newCandidate("Dennis");
-        newCandidate("Lasse");
-        newCandidate("Hellen");*/
         //authorize(0xea978991fbfa2ea664163d8e193c99a33c332bd9);
     }
 

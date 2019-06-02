@@ -72,13 +72,10 @@ ElectionApp =
             });
         },
 
+
+
         loadData: function () {
             var ballot;
-            var alertbox = $('#alert');
-
-            alertbox.hide();
-
-
             // Loading the account data
             web3.eth.getCoinbase(function (error, userAccount) {
                 if (error === null) {
@@ -130,36 +127,6 @@ ElectionApp =
             });
         },
 
-        candidateVote: function () {
-            var alertbox = $('#alert');
-            var id = $('#pickCandidate').val();
-
-            alertbox.hide();
-            ElectionApp.contracts.Ballot.deployed().then(function (app) {
-                return app.candidateVote(id, {from: ElectionApp.account});
-            }).then(function (result) {
-                // Wait for votes to update
-                console.log("Hiding ui");
-                $('#form').hide();
-            }).catch(function (err) {
-                alertbox.show();
-                console.error(err);
-            })
-        },
-
-        voterAuthorized: function () {
-            var alertbox = $('#alert');
-            var votersAddress = document.getElementById("inputID").value;
-            var instance;
-            ElectionApp.contracts.Ballot.deployed().then(function (app) {
-                instance = app;
-                return instance.authorize(votersAddress);
-            }).then(function (result) {
-                console.log(votersAddress);
-            });
-
-        },
-
         createCandidate: function () {
             var candidateForm = document.getElementById("newCandidateID").value;
             var instance;
@@ -169,7 +136,35 @@ ElectionApp =
             }).then(function (results) {
                 console.log(candidateForm);
             });
+        },
+
+        candidateVote: function () {
+            var id = $('#pickCandidate').val();
+
+            ElectionApp.contracts.Ballot.deployed().then(function (app) {
+                return app.candidateVote(id, {from: ElectionApp.account});
+            }).then(function (result) {
+                // Wait for votes to update
+                console.log("Hiding ui");
+                $('#form').hide();
+            }).catch(function (err) {
+
+                console.error(err);
+            })
+        },
+
+        voterAuthorized: function () {
+            var votersAddress = document.getElementById("inputID").value;
+            var instance;
+            ElectionApp.contracts.Ballot.deployed().then(function (app) {
+                instance = app;
+                return instance.authorize(votersAddress);
+            }).then(function (result) {
+                console.log(votersAddress);
+            });
+
         }
+
     }
 
 $(function () {
